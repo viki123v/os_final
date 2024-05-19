@@ -1,0 +1,61 @@
+version: "3.9"
+services:
+#  udp_client:
+#    image: udp_client
+#    build: ./udp/client/
+#    deploy:
+#      replicas: 5
+#    volumes:
+#      - type: "bind"
+#        target: "/usr/local/app"
+#        source: "./udp/client/"
+#    networks:
+#      - udp_net
+#    env_file: &env
+#      - ./.env
+#    depends_on:
+#     - udp_server
+#  udp_server:
+#    container_name: udp_server 
+#    image: udp_server
+#    build: ./udp/server/
+#    volumes:
+#      - type: "bind"
+#        target: "/usr/local/app"
+#        source: "./udp/server/"
+#    networks:
+#      - udp_net 
+#    env_file: *env
+
+ tcp_client:
+    deploy:
+      replicas: 5 
+    image: tcp_client
+    build: ./tcp/client/
+    networks:
+      - tcp_net
+    env_file: ./.env
+    depends_on:
+      - tcp_server 
+    volumes:
+      - type: bind
+        source: ./tcp/client/
+        target: &cont_path /usr/local/app
+    
+ tcp_server:
+    container_name: tcp_server 
+    image: tcp_server
+    build: ./tcp/server
+    env_file: ./.env
+    networks:
+      - tcp_net
+    volumes:
+      - type: bind
+        source: ./tcp/server
+        target: *cont_path 
+
+networks:
+  # udp_net:
+  #   driver: "bridge"
+  tcp_net:
+    driver: "bridge"

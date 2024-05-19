@@ -1,4 +1,4 @@
-package zad1;
+package zad3.udp.client;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -6,6 +6,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 public class UDPClient {
+    public static final int sendingPort = Integer.parseInt(System.getenv("UDP_Server"));
+    public static final int recievingPort = Integer.parseInt(System.getenv("UDP_Client"));
 
     public static void main(String[] args) {
         String[] msgs = {
@@ -14,19 +16,26 @@ public class UDPClient {
                 "logout"
         };
 
-        try (final DatagramSocket socket = new DatagramSocket(2020)) {
+
+        try (final DatagramSocket socket = new DatagramSocket(recievingPort)) {
+            InetAddress addr = InetAddress.getByName("udp_server");
+
             for (String msg : msgs) {
 
                 byte[] msgInBytes = msg.getBytes();
 
-                DatagramPacket packetForSending = new DatagramPacket(msgInBytes, msgInBytes.length,
-                        InetAddress.getLocalHost(), 2000);
+                DatagramPacket packetForSending = new DatagramPacket(
+                        msgInBytes, msgInBytes.length, addr, sendingPort
+                );
+
+                System.out.println("Send");
 
                 socket.send(packetForSending);
                 new Thread(new RecieveWorker(socket)).start();
             }
 
-            while (Thread.activeCount()>2);
+            while (Thread.activeCount() > 2) ;
+
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
         }
@@ -46,9 +55,10 @@ class RecieveWorker implements Runnable {
 
     @Override
     public void run() {
-        try{
+        try {
             socket.receive(packet);
-        }catch(IOException io){}    
-        System.out.println(new String(packet.getData()));
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
     }
 }
